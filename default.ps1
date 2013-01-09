@@ -3,17 +3,19 @@
 Framework "4.0"
 
 properties {
-	$applicationName = "Migrationist"
+	$applicationName = "[ApplicationName]"
 	$buildConfig = "Debug"
 }
 
+#Messages
 properties {
   $testMessage = 'Executed Test!'
   $compileMessage = 'Executed Compile!'
   $cleanMessage = 'Executed Clean!'
 }
 
-properties { # Files
+# Files
+properties { 
 	$executingDir = new-object System.IO.DirectoryInfo $pwd
 	$baseDir = resolve-path .
 	$sourceDir = "."
@@ -25,12 +27,12 @@ properties { # Files
 task default -depends Test
 
 # Run Tests
-task Test -depends Compile, Clean { 
+task Test -depends Compile, Clean -description "Run the project test cases"{ 
   $testMessage
 }
 
 # Compile source code
-task Compile -depends Clean { 
+task Compile -depends Clean -description "Compile the project source code"{ 
   
   msbuild /p:Configuration=$buildConfig /p:OutDir=$buildOutputDir /verbosity:minimal /consoleLoggerparameters:ErrorsOnly /nologo /m "$applicationName.sln"
   new-balloontip -tiptext "Build" -tiptitle "Compiling"
@@ -45,15 +47,15 @@ task CompileDebug -depends Clean {
   $compileMessage
 }
 
-# Clean the project
-task Clean { 
+# 
+task Clean  -description "Clean the project"{ 
   $cleanMessage
   remove-item .\Deploy\*.*
   Write-today
 }
 
 # Deploy the project
-task Deploy {
+task Deploy  -Description "Create a project deployment"{
 	msbuild /p:Configuration="Release" /p:OutDir=$buildOutputDir /verbosity:minimal /consoleLoggerparameters:ErrorsOnly /nologo /m "$applicationName.sln"
 	"Deploying"
 }
