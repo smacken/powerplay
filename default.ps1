@@ -60,6 +60,13 @@ task Deploy  -Description "Create a project deployment"{
 	"Deploying"
 }
 
+task Client -description "build the client-side javascript." {
+
+    if((program-exist grunt)){
+        grunt    
+    }
+}
+
 # Documentation
 task ? -Description "Helper to display task info" {
 	Write-Documentation
@@ -67,4 +74,5 @@ task ? -Description "Helper to display task info" {
 	"psake compiledebug - compile source code with"
 	"psake clean"
 	"psake deploy"
+    "psake client"
 }
