@@ -26,6 +26,11 @@ function Delete-Directory($folderName)
 	remove-item -force -recurse $folderName -erroraction SilentlyContinue
 }
 
+# Monitors a log file tailing the last addition
+function Monitor-Log($path){
+	get-content $path -tail 1 -wait
+}
+
 function New-BalloonTip {
 [CmdletBinding()]
 Param(

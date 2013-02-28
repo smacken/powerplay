@@ -67,6 +67,16 @@ task Client -description "build the client-side javascript." {
     }
 }
 
+task Watch -description "Starts project monitoring" {
+  # client side watching
+  # e.g. grunt watch
+
+  # leverage pswatch for server-side watching
+
+  # log & diagnostics watching with tail
+  # e.g. monitor-log .\admin.log
+}
+
 # Documentation
 task ? -Description "Helper to display task info" {
 	Write-Documentation
