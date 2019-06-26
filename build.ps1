@@ -1,5 +1,6 @@
 ﻿# build functions to assist with the build process
 
+
 # Configure the formatting of the tasks within the build console log
 formatTaskName {
 	param($taskName)
@@ -31,25 +32,6 @@ function Monitor-Log($path){
 	get-content $path -tail 1 -wait
 }
 
-function New-BalloonTip {
-[CmdletBinding()]
-Param(
-$TipText='This is the body text.',
-$TipTitle='This is the title.',
-$TipDuration='10000'
-)
-	[system.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
-	$balloon = New-Object System.Windows.Forms.NotifyIcon
-	$path = Get-Process -id $pid | Select-Object -ExpandProperty Path
-	$icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
-	$balloon.Icon = $icon
-	$balloon.BalloonTipIcon = 'Info'
-	$balloon.BalloonTipText = $TipText
-	$balloon.BalloonTipTitle = $TipTitle
-	$balloon.Visible = $true
-	$balloon.ShowBalloonTip($TipDuration)
-}
-
 # Checks if a program exists on the command line
 # i.e node, coffee, grunt
 # Usage:
@@ -66,4 +48,91 @@ function Program-Exists($prog){
 	catch {
 	    return $false;
 	}
+}
+
+# For a solution, recursively clean out bin, obj folders
+function Clean-DevFolders($path){
+	Get-ChildItem $path -include bin,obj -Recurse | 
+    	foreach ($_) { remove-item $_.fullname -Force -Recurse }
+}
+
+function Check-NodeEnv(){
+	try {
+		node --version ; npm --version
+	}
+	catch {
+		Write-host "Please install NodeJs"
+	}
+}
+
+function Drop-Database($name, $username, $pass){
+	import-module sqlps
+
+	try {
+		invoke-sqlcmd -ServerInstance "." -U $username -P $pass -Query "Drop database $name;"    
+	}
+	catch {
+		write-host "Could not drop database $name"
+	}
+}
+
+function Run-MsBuildPath($args){
+	# https://github.com/microsoft/vswhere/wiki/Installing
+	$path = vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | select-object -first 1
+	if ($path) {
+		& $path $args
+	}
+}
+
+
+# Example Usage:
+# $appSettingKeys = @{
+# "Environment" = "development"
+#   "Database.ShouldUseTransactionRetry" = "true"
+# }
+# Update-AppSettings .\app.config $appSettingsKeys
+#
+function Update-AppSettings
+{
+    param(
+        [parameter(mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $path,
+
+        [parameter(mandatory = $false)]
+        [hashtable] $settings
+    )
+
+    $xml = [xml](Get-Content $path)
+    if ($null -eq $xml.configuration.appSettings){
+        write-host "Adding app settings"
+        $appSettings = $xml.CreateElement("appSettings")
+        $xml.configuration.AppendChild($appSettings)
+    }
+
+    foreach($key in $settings.Keys)
+    {
+        Write-Host "Locating key: '$key' in '$path'"
+        if(($addKey = $xml.SelectSingleNode("//appSettings/add[@key = '$key']")))
+        {
+            Write-Host "Found key: '$key' in XML, updating value to $($appSettingKeys[$key])"
+            $addKey.SetAttribute('value', $appSettingKeys[$key])
+        } 
+        else 
+        {
+            $newElement = $xml.CreateElement("add");
+            $nameAtt1 = $xml.CreateAttribute("key");
+            $nameAtt1.psbase.value = $key;
+            $newElement.SetAttributeNode($nameAtt1);
+
+            $nameAtt2 = $xml.CreateAttribute("value");
+            $nameAtt2.psbase.value = $settings.Item($key);
+            $newElement.SetAttributeNode($nameAtt2);
+
+            $settings = $xml.SelectSingleNode("//appSettings")
+            $settings.AppendChild($newElement)
+        }
+    }
+
+    $xml.Save($path)
 }

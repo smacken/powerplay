@@ -1,4 +1,7 @@
-﻿include ".\build.ps1"
+﻿include .\New-BalloonTip.ps1
+include .\Increment-BuildNumbers.ps1
+include .\Out-Speech.ps1
+include .\build.ps1
 
 Framework "4.0"
 
@@ -20,15 +23,35 @@ properties {
 	$baseDir = resolve-path .
 	$sourceDir = "."
 	$solutionFile = "$applicationName.sln"
-	$buildOutputDir = "..\Deploy"
+  $buildOutputDir = "..\Deploy"
+  $toolsDir = ".\Tools"
 }
 
 # default task - called with 'psake' command
-task default -depends Test
+task default -depends Clean, Test
+
+task Clean  -description "Clean the project"{ 
+  $cleanMessage
+  remove-item .\Deploy\*.*
+  Clean-DevFolders($sourceDir)
+  Write-today
+}
 
 # Run Tests
 task Test -depends Compile, Clean -description "Run the project test cases"{ 
   $testMessage
+}
+
+# for build server
+task NugetRestore {
+  $nugetExe = $toolsDir + "\Nuget\nuget.exe"
+  Push-Location $sourceDir
+  try {
+    &$nugetExe "restore"  
+  }
+  finally{
+    Pop-Location
+  }
 }
 
 # Compile source code
@@ -45,13 +68,6 @@ task CompileDebug -depends Clean {
   msbuild /p:Configuration="Debug" /p:OutDir=$buildOutputDir /verbosity:minimal /consoleLoggerparameters:ErrorsOnly /nologo /m "$applicationName.sln"
   
   $compileMessage
-}
-
-# 
-task Clean  -description "Clean the project"{ 
-  $cleanMessage
-  remove-item .\Deploy\*.*
-  Write-today
 }
 
 # Deploy the project
@@ -77,6 +93,11 @@ task Watch -description "Starts project monitoring" {
   # e.g. monitor-log .\admin.log
 }
 
+task UpdateSelf {
+  # Update this script directly from github
+  Invoke-RestMethod "https://raw.githubusercontent.com/smacken/powerplay/master/default.ps1" -OutFile $PSScriptRoot\default.ps1
+}
+
 # Documentation
 task ? -Description "Helper to display task info" {
 	Write-Documentation
@@ -84,5 +105,5 @@ task ? -Description "Helper to display task info" {
 	"psake compiledebug - compile source code with"
 	"psake clean"
 	"psake deploy"
-    "psake client"
+  "psake client"
 }

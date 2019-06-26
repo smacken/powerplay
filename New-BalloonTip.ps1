@@ -1,10 +1,10 @@
 ﻿function New-BalloonTip {
 [CmdletBinding()]
 Param(
-$TipText='This is the body text.',
-$TipTitle='This is the title.',
-$TipDuration='10000'
-)
+	$TipText='This is the body text.',
+	$TipTitle='This is the title.',
+	$TipDuration='10000'
+	)
 	[system.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
 	$balloon = New-Object System.Windows.Forms.NotifyIcon
 	$path = Get-Process -id $pid | Select-Object -ExpandProperty Path
