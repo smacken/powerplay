@@ -1,6 +1,7 @@
 ﻿include .\New-BalloonTip.ps1
 include .\Increment-BuildNumbers.ps1
 include .\Out-Speech.ps1
+include .\node.ps1
 include .\build.ps1
 
 Framework "4.0"

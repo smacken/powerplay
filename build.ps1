@@ -56,15 +56,6 @@ function Clean-DevFolders($path){
     	foreach ($_) { remove-item $_.fullname -Force -Recurse }
 }
 
-function Check-NodeEnv(){
-	try {
-		node --version ; npm --version
-	}
-	catch {
-		Write-host "Please install NodeJs"
-	}
-}
-
 function Drop-Database($name, $username, $pass){
 	import-module sqlps
 
