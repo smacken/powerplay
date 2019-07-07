@@ -9,5 +9,10 @@ Tasks can be dependent upon one another.
 Powerplay creates a starting point and scaffolding in setting up build automation for a project.
 A project will have a set of properties relating to tasks which can allow for an abstracted configuration on a project by project basis. Different configurations could be used per different environments.
 
+Scripts
+- build.ps1 - Common development build functions
+- dotnetcore.ps1 - dot net core build helpers
+- node.ps1 - Managing node projects within/alongside .Net
+
 Client-side (JavaScript) build automation leveages Grunt. See grunt.js.
 This allows for concat, minification, test etc of client-side scripts.

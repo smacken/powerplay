@@ -1,6 +1,5 @@
 ﻿# build functions to assist with the build process
 
-
 # Configure the formatting of the tasks within the build console log
 formatTaskName {
 	param($taskName)
@@ -52,8 +51,14 @@ function Program-Exists($prog){
 
 # For a solution, recursively clean out bin, obj folders
 function Clean-DevFolders($path){
+    # bin and obj
 	Get-ChildItem $path -include bin,obj -Recurse | 
-    	foreach ($_) { remove-item $_.fullname -Force -Recurse }
+        foreach ($_) { remove-item $_.fullname -Force -Recurse }
+
+    # .suo
+    Get-ChildItem $path -include .suo -Recurse | 
+        where { $_.PsIsContainer -and $_.FullName -notmatch 'node_modules' -and $_.FullName -notmatch 'bower_components' } | 
+        foreach ($_) { remove-item $_.fullname -Force -Recurse }
 }
 
 function Drop-Database($name, $username, $pass){
