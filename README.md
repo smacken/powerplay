@@ -16,3 +16,17 @@ Scripts
 
 Client-side (JavaScript) build automation leveages Grunt. See grunt.js.
 This allows for concat, minification, test etc of client-side scripts.
+
+Do Nothing Script
+
+If you have procedures that arn't yet automated you can still achieve some governance around the process with a do-nothing-script.
+do-nothing-sample.ps1
+
+Example procedure task
+```powershell
+    task CreateSSHKeypairStep {
+        Write-Host "Run:"
+        write-host "   ssh-keygen -t rsa -f ~/$username"
+        WaitForEnter
+    }
+```

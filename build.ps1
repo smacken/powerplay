@@ -132,3 +132,22 @@ function Update-AppSettings
 
     $xml.Save($path)
 }
+
+function Create-IISWebSite($siteName, $port, $physicalPath) {
+    if (Test-Path IIS:\Sites\$siteName) {
+        Write-Host "$siteName already exists. Doing nothing" -ForegroundColor Yellow
+        return
+    }
+    $isPortTaken = Get-NetTCPConnection -State Listen | Where-Object { $_.LocalPort -eq $port }
+    if ($isPortTaken -ne $null) {
+        Write-Host "Port $port (Website: $siteName) is already in use. Assuming website is already set up with a different name." -ForegroundColor Yellow
+        return
+    }
+
+    if (!(Test-Path IIS:\AppPools\$siteName)) {
+        $appPool = New-WebAppPool -Name $siteName
+        $appPool | Set-ItemProperty -Name 'managedRuntimeVersion' -Value 'v4.0'
+    }
+    New-WebSite -Name $siteName -ApplicationPool $siteName -PhysicalPath $physicalPath -Port $port
+    Write-Host "$siteName created at port $port under app pool $siteName" -ForegroundColor Yellow
+}

@@ -1,0 +1,1 @@
+install-module psake -Scope CurrentUser
